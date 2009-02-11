@@ -1,5 +1,7 @@
 
 The samples provided in this directory are based on Google App Engine(GAE) and require the GAE SDK to run. 
+Some of the sample code in these directories in based on the GAE samples on code.google.com with modifications
+to implement the "hybrid" protocol.
 
 Please make sure to install the  Google App Engine SDK first from here (http://code.google.com/appengine/downloads.html) 
 before proceeding to run the sample applications.
