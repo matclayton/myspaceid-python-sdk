@@ -1,18 +1,20 @@
 
 The samples provided in this directory are based on Google App Engine(GAE) and require the GAE SDK to run. 
 
-Please make sure to install the  Google App Engine SDK first from here before proceeding to run teh demos: http://code.google.com/appengine/downloads.html. 
+Please make sure to install the  Google App Engine SDK first from here (http://code.google.com/appengine/downloads.html) 
+before proceeding to run the sample applications.
 
-To run these demos locally in your GAE environment, simply copy the following directories to corresponding application path
-and then run your local GAE dev_appserver script:
+After you have verified that the GAE environment is properly setup, you can run the samples locally in your GAE environment.
+To run the samples, simply copy the following directories to corresponding application path and then run your local GAE 
+dev_appserver script:
 
 	src\myspace
 	src\oauthlib
 	src\openid
 	src\simplejson
 	
-For example, to run the openid-combined-consumer application please copy the directories above to the openid-combined-consumer directory
-and then run your dev_appserver script. 
+For example, to run the openid-combined-consumer application please copy the directories above to the openid-combined-consumer 
+directory and then run your dev_appserver script. 
 
 Some useful GAE links:
 ----------------------
