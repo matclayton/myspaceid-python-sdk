@@ -1,0 +1,20 @@
+
+The samples provided in this directory are based on Google App Engine(GAE) and require the GAE SDK to run. 
+
+Please make sure to install the  Google App Engine SDK first from here before proceeding to run teh demos: http://code.google.com/appengine/downloads.html. 
+
+To run these demos locally in your GAE environment, simply copy the following directories to corresponding application path
+and then run your local GAE dev_appserver script:
+
+	src\myspace
+	src\oauthlib
+	src\openid
+	src\simplejson
+	
+For example, to run the openid-combined-consumer application please copy the directories above to the openid-combined-consumer directory
+and then run your dev_appserver script. 
+
+Some useful GAE links:
+----------------------
+GAE dev environment seteup: http://code.google.com/appengine/docs/gettingstarted/devenvironment.html
+Using Eclipse with GAE: http://code.google.com/appengine/articles/eclipse.html

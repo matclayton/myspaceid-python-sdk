@@ -1,0 +1,6 @@
+
+The following dependencies are included by this client library:
+
+    * oauth (http://code.google.com/p/oauth)
+    * simplejson (http://code.google.com/p/simplejson) 
+    * openid (http://openidenabled.com/python-openid)
