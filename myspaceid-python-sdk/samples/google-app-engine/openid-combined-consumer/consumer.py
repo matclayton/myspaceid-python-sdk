@@ -57,8 +57,8 @@ from openid import fetchers
 from openid.consumer.consumer import Consumer
 from openid.consumer import discover
 from openid.extensions import oauth
-from myspace import oauthhelper
-from myspace.oauthhelper import OAuthRequestHelper
+from myspace import myspaceapi
+from myspace.myspaceapi import MySpace
 
 import fetcher
 import store
@@ -181,7 +181,7 @@ class LoginHandler(Handler):
     self.session.save()
 
     # Also try to get authorization to access the user's Contact data (via the oAuth extension)
-    consumer_key = oauthhelper.CONSUMER_KEY
+    consumer_key = myspaceapi.CONSUMER_KEY
     scope = None
     oauth_authorize_request = oauth.OauthAuthorizeTokenRequest(consumer_key, scope)
     auth_request.addExtension(oauth_authorize_request)
@@ -217,12 +217,13 @@ class FinishHandler(Handler):
       """
       oauth_data = oauth.OauthAuthorizeTokenResponse.fromSuccessResponse(response)
       if (oauth_data.authorized_request_token):
-          oauth_access_token = OAuthRequestHelper.exchange_request_token_for_access_token(oauth_data.authorized_request_token)
-          user_data = OAuthRequestHelper.get_userinfo(oauth_access_token)
+          ms = MySpace()
+          oauth_access_token = ms.get_access_token(oauth_data.authorized_request_token)
+          user_data = ms.get_userinfo(oauth_access_token)
           userId = user_data['userId']
-          profile_data = OAuthRequestHelper.get_profile(userId, oauth_access_token)
-          friends_data = OAuthRequestHelper.get_friends(userId, oauth_access_token)
-          albums_data = OAuthRequestHelper.get_albums(userId, oauth_access_token)
+          profile_data = ms.get_profile(userId, oauth_access_token)
+          friends_data = ms.get_friends(userId, oauth_access_token)
+          albums_data = ms.get_albums(userId, oauth_access_token)
       else:
           profile_data = friends_data = None
     elif response.status == 'failure':
