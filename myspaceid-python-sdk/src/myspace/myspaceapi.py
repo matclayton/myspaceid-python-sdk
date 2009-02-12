@@ -5,7 +5,7 @@ try:
     from google.appengine.api import urlfetch
 except:
     pass
-
+import exceptions
 import simplejson
 import ckeynsecret
 from oauthlib import oauth
@@ -35,12 +35,22 @@ def get_default_urlfetcher():
     return AppEngineUrlFetcher()
   return UrlFetcher()
 
+class ConfigurationError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+    
 class MySpace():
 
     CONSUMER_KEY    = ckeynsecret.CONSUMER_KEY
     CONSUMER_SECRET = ckeynsecret.CONSUMER_SECRET
     
     def __init__(self):
+      if MySpace.CONSUMER_KEY == '<YOUR_CONSUMER_KEY_HERE>' or MySpace.CONSUMER_SECRET == '<YOUR_CONSUMER_SECRET_HERE>' : 
+          raise ConfigurationError('Please edit ckeynsecret.py to specify your MySpace Consumer Key and Secret')
+
       self.consumer = oauth.OAuthConsumer(MySpace.CONSUMER_KEY, MySpace.CONSUMER_SECRET)
       self.signature_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
       self.url_fetcher = get_default_urlfetcher()
