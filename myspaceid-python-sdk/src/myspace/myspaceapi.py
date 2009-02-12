@@ -12,8 +12,6 @@ import oauthlib as oauth
 
 __all__ = [
     'MySpace',
-    'CONSUMER_KEY',
-    'CONSUMER_SECRET',
     ]
 
 REQUEST_TOKEN_URL = 'http://api.myspace.com/request_token'
@@ -32,18 +30,18 @@ API_PROFILE_URL = 'http://api.myspace.com/v1/users/%s/profile.json'
 API_FRIENDS_URL = 'http://api.myspace.com/v1/users/%s/friends.json'
 API_ALBUMS_URL = 'http://api.myspace.com/v1/users/%s/albums.json'
 
-CONSUMER_KEY    = ckeynsecret.CONSUMER_KEY
-CONSUMER_SECRET = ckeynsecret.CONSUMER_SECRET
-
 def get_default_urlfetcher():
   if sys.modules.has_key('google.appengine.api.urlfetch'):
     return AppEngineUrlFetcher()
   return UrlFetcher()
 
 class MySpace():
+
+    CONSUMER_KEY    = ckeynsecret.CONSUMER_KEY
+    CONSUMER_SECRET = ckeynsecret.CONSUMER_SECRET
     
     def __init__(self):
-      self.consumer = oauth.OAuthConsumer(CONSUMER_KEY, CONSUMER_SECRET)
+      self.consumer = oauth.OAuthConsumer(MySpace.CONSUMER_KEY, MySpace.CONSUMER_SECRET)
       self.signature_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
       self.url_fetcher = get_default_urlfetcher()
 
