@@ -1,5 +1,5 @@
 from openid.extension import Extension
-import oauthlib
+from oauthlib import oauth
 
 __all__ = [
     'OauthAuthorizeTokenRequest',
@@ -46,7 +46,7 @@ class OauthAuthorizeTokenResponse(Extension):
         if (len(args) > 0):
             #Note that we're passing an empty string for the secret part since the oauth token secret
             #should be an empty string per section 10 of the extension spec
-            self.authorized_request_token = oauthlib.OAuthToken(args['request_token'], '')
+            self.authorized_request_token = oauth.OAuthToken(args['request_token'], '')
             
         return self
 

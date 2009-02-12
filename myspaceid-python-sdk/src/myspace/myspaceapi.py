@@ -8,7 +8,7 @@ except:
 
 import simplejson
 import ckeynsecret
-import oauthlib as oauth
+from oauthlib import oauth
 
 __all__ = [
     'MySpace',
