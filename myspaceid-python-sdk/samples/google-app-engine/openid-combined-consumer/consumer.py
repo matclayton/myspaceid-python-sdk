@@ -57,7 +57,6 @@ from openid import fetchers
 from openid.consumer.consumer import Consumer
 from openid.consumer import discover
 from openid.extensions import oauth
-from myspace import myspaceapi
 from myspace.myspaceapi import MySpace
 
 import fetcher
@@ -181,7 +180,7 @@ class LoginHandler(Handler):
     self.session.save()
 
     # Also try to get authorization to access the user's Contact data (via the oAuth extension)
-    consumer_key = myspaceapi.CONSUMER_KEY
+    consumer_key = MySpace.CONSUMER_KEY
     scope = None
     oauth_authorize_request = oauth.OauthAuthorizeTokenRequest(consumer_key, scope)
     auth_request.addExtension(oauth_authorize_request)
