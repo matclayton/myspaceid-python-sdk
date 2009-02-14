@@ -62,6 +62,7 @@ from myspace.myspaceapi import MySpace
 import fetcher
 import store
 import gmemsess
+import ckeynsecret
 
 # Set to True if stack traces should be shown in the browser, etc.
 _DEBUG = False
@@ -180,7 +181,7 @@ class LoginHandler(Handler):
     self.session.save()
 
     # Also try to get authorization to access the user's Contact data (via the oAuth extension)
-    consumer_key = MySpace.CONSUMER_KEY
+    consumer_key = ckeynsecret.CONSUMER_KEY
     scope = None
     oauth_authorize_request = oauth.OauthAuthorizeTokenRequest(consumer_key, scope)
     auth_request.addExtension(oauth_authorize_request)
@@ -216,13 +217,13 @@ class FinishHandler(Handler):
       """
       oauth_data = oauth.OauthAuthorizeTokenResponse.fromSuccessResponse(response)
       if (oauth_data.authorized_request_token):
-          ms = MySpace()
-          oauth_access_token = ms.get_access_token(oauth_data.authorized_request_token)
-          user_data = ms.get_userinfo(oauth_access_token)
-          userId = user_data['userId']
-          profile_data = ms.get_profile(userId, oauth_access_token)
-          friends_data = ms.get_friends(userId, oauth_access_token)
-          albums_data = ms.get_albums(userId, oauth_access_token)
+          ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET)
+          access_token = ms.get_access_token(oauth_data.authorized_request_token)
+          ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET, access_token.key, access_token.secret)
+          user_id = ms.get_userid()
+          profile_data = ms.get_profile(user_id)
+          friends_data = ms.get_friends(user_id)
+          albums_data = ms.get_albums(user_id)
       else:
           profile_data = friends_data = None
     elif response.status == 'failure':
