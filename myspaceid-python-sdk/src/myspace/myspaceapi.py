@@ -18,9 +18,11 @@ OAUTH_AUTHORIZATION_URL = 'http://api.myspace.com/authorize'
 OAUTH_ACCESS_TOKEN_URL  = 'http://api.myspace.com/access_token'
 
 API_USERINFO_URL = 'http://api.myspace.com/v1/user.json'
-API_PROFILE_URL = 'http://api.myspace.com/v1/users/%s/profile.json'
-API_FRIENDS_URL = 'http://api.myspace.com/v1/users/%s/friends.json'
 API_ALBUMS_URL = 'http://api.myspace.com/v1/users/%s/albums.json'
+API_ALBUM_URL = 'http://api.myspace.com/v1/users/%s/albums/%s/photos.json'
+API_FRIENDS_URL = 'http://api.myspace.com/v1/users/%s/friends.json'
+API_FRIENDSHIP_URL = 'http://api.myspace.com/v1/users/%s/friends/%s.json'
+API_PROFILE_URL = 'http://api.myspace.com/v1/users/%s/profile.json'
 
 def get_default_urlfetcher():
   if sys.modules.has_key('google.appengine.api.urlfetch'):
@@ -74,15 +76,29 @@ class MySpace():
         albums_request_url = API_ALBUMS_URL % user_id
         return self.__call_myspace_api(albums_request_url)
     
-    def get_album(self, user_id, album_id=None):
-        pass
+    def get_album(self, user_id, album_id):
+        album_request_url = API_ALBUM_URL % (user_id, album_id)
+        return self.__call_myspace_api(album_request_url)
     
     def get_friends(self, user_id, page=None, page_size=None, list=None, show=None):
         friends_request_url = API_FRIENDS_URL % user_id
-        return self.__call_myspace_api(friends_request_url)
+        
+        #set up extra params, if any
+        params = {}
+        if page is not None:
+            params['page'] = page
+        if page_size is not None:
+            params['page_size'] = page_size
+        if list is not None:
+            params['list'] = list
+        if show is not None:
+            params['show'] = show
+             
+        return self.__call_myspace_api(friends_request_url, parameters=params)
 
     def get_friendship(self, user_id, friend_ids):
-        pass
+        friendship_request_url = API_FRIENDSHIP_URL % (user_id, friend_ids)
+        return self.__call_myspace_api(friendship_request_url)
 
     def get_mood(self, user_id):
         pass
@@ -116,7 +132,7 @@ class MySpace():
         resp = self.url_fetcher.fetch(oauth_request.to_url(), debug)
         return resp 
       
-    def __call_myspace_api(self, api_url, debug=False):
+    def __call_myspace_api(self, api_url, parameters=None, debug=False):
         #Check to make sure the contructor was call called with the access_token
         #before making API calls
         if self.token is None:
@@ -124,7 +140,7 @@ class MySpace():
         
         access_token = self.token
         oauth_request = oauth.OAuthRequest.from_consumer_and_token(
-            self.consumer, token=access_token, http_url=api_url
+            self.consumer, token=access_token, http_url=api_url, parameters=parameters
         )
         oauth_request.sign_request(self.signature_method, self.consumer, access_token)
         json = self.url_fetcher.fetch(oauth_request.to_url(), debug)
