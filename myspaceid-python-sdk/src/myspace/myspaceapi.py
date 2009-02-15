@@ -17,12 +17,18 @@ OAUTH_REQUEST_TOKEN_URL = 'http://api.myspace.com/request_token'
 OAUTH_AUTHORIZATION_URL = 'http://api.myspace.com/authorize'
 OAUTH_ACCESS_TOKEN_URL  = 'http://api.myspace.com/access_token'
 
-API_USERINFO_URL = 'http://api.myspace.com/v1/user.json'
-API_ALBUMS_URL = 'http://api.myspace.com/v1/users/%s/albums.json'
-API_ALBUM_URL = 'http://api.myspace.com/v1/users/%s/albums/%s/photos.json'
-API_FRIENDS_URL = 'http://api.myspace.com/v1/users/%s/friends.json'
+API_USERINFO_URL   = 'http://api.myspace.com/v1/user.json'
+API_ALBUMS_URL     = 'http://api.myspace.com/v1/users/%s/albums.json'
+API_ALBUM_URL      = 'http://api.myspace.com/v1/users/%s/albums/%s/photos.json'
+API_FRIENDS_URL    = 'http://api.myspace.com/v1/users/%s/friends.json'
 API_FRIENDSHIP_URL = 'http://api.myspace.com/v1/users/%s/friends/%s.json'
-API_PROFILE_URL = 'http://api.myspace.com/v1/users/%s/profile.json'
+API_MOOD_URL       = 'http://api.myspace.com/v1/users/%s/mood.json'
+API_PHOTOS_URL     = 'http://api.myspace.com/v1/users/%s/photos.json'
+API_PHOTO_URL      = 'http://api.myspace.com/v1/users/%s/photos/%s.json'
+API_PROFILE_URL    = 'http://api.myspace.com/v1/users/%s/profile.json'
+API_STATUS_URL     = 'http://api.myspace.com/v1/users/%s/status.json'
+API_VIDEOS_URL     = 'http://api.myspace.com/v1/users/%s/videos.json'
+API_VIDEO_URL      = 'http://api.myspace.com/v1/users/%s/videos/%s.json'
 
 def get_default_urlfetcher():
   if sys.modules.has_key('google.appengine.api.urlfetch'):
@@ -81,8 +87,7 @@ class MySpace():
         return self.__call_myspace_api(album_request_url)
     
     def get_friends(self, user_id, page=None, page_size=None, list=None, show=None):
-        friends_request_url = API_FRIENDS_URL % user_id
-        
+        friends_request_url = API_FRIENDS_URL % user_id       
         #set up extra params, if any
         params = {}
         if page is not None:
@@ -92,8 +97,7 @@ class MySpace():
         if list is not None:
             params['list'] = list
         if show is not None:
-            params['show'] = show
-             
+            params['show'] = show             
         return self.__call_myspace_api(friends_request_url, parameters=params)
 
     def get_friendship(self, user_id, friend_ids):
@@ -101,26 +105,38 @@ class MySpace():
         return self.__call_myspace_api(friendship_request_url)
 
     def get_mood(self, user_id):
-        pass
+        mood_request_url = API_MOOD_URL % user_id
+        return self.__call_myspace_api(mood_request_url)
 
     def get_photos(self, user_id, page=None, page_size=None):
-        pass
+        photos_request_url = API_PHOTOS_URL % user_id       
+        #set up extra params, if any
+        params = {}
+        if page is not None:
+            params['page'] = page
+        if page_size is not None:
+            params['page_size'] = page_size            
+        return self.__call_myspace_api(photos_request_url, parameters=params)
 
     def get_photo(self, user_id, photo_id):
-        pass
+        photo_request_url = API_PHOTO_URL % (user_id, photo_id)
+        return self.__call_myspace_api(photo_request_url)
     
     def get_profile(self, user_id):        
         profile_request_url = API_PROFILE_URL % user_id
         return self.__call_myspace_api(profile_request_url)
 
     def get_status(self, user_id):
-        pass
+        status_request_url = API_STATUS_URL % user_id
+        return self.__call_myspace_api(status_request_url)
 
     def get_videos(self, user_id):
-        pass
+        videos_request_url = API_VIDEOS_URL % user_id
+        return self.__call_myspace_api(videos_request_url)
 
     def get_video(self, user_id, video_id):
-        pass
+        video_request_url = API_VIDEO_URL % (user_id, video_id)
+        return self.__call_myspace_api(video_request_url)
     
     """Miscellaneous utility functions 
     """
