@@ -16,7 +16,9 @@ dev_appserver script:
 	src\simplejson
 	
 For example, to run the openid-combined-consumer application please copy the directories above to the openid-combined-consumer 
-directory and then run your dev_appserver script. 
+directory and then run your dev_appserver script.
+
+For the oauth example you must copy all the directories mentioned above except openid which is not required.
 
 openid-combined-consumer:
 -------------------------
@@ -30,6 +32,10 @@ oauth:
 -----------------------
 This sample demonstrates an OAuth Consumer application by implementing the oauth delegated access flow ("3 legged oauth").
 Once the User authrizes the Consumer's request, it fetches the user's profile and friend information using the library. 
+
+Please note that in the samples above we store the access token in the session. But, in a real application you would
+probably need to store it an the user database so that you can call the MySpace API methods in the future using the 
+stored access token
 
 Some useful GAE links:
 ----------------------
