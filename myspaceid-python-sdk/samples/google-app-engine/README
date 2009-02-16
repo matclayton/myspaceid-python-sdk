@@ -1,4 +1,11 @@
 
+-------------------------------------------------------------------------------------------------
+   IMPORTANT: 
+
+      Please make sure to edit the ckeynsecret.py file in the sample directories and enter your
+      own consumer key and secret before running the samples.
+-------------------------------------------------------------------------------------------------
+
 The samples provided in this directory are based on Google App Engine(GAE) and require the GAE SDK to run. 
 Some of the sample code in these directories in based on the GAE samples on code.google.com with modifications
 to implement the "hybrid" protocol.
