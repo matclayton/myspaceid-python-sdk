@@ -174,8 +174,19 @@ class AppEngineUrlFetcher():
         print 'server response: %s' % s
       return s
 
-class UrlFetcher():
+class UrlFetcher(object):
   """Implementation of UrlFetch for non-AppEngine envs."""
+
+  def fetch(self, url, debug=False):    
+    req = urllib2.urlopen(url)
+    try:
+      f = urllib2.urlopen(req)
+      response = f.read()
+    except urllib2.URLError, e:
+      response = None
+    return response
+
+class UrlFetcher():
 
   def fetch(self, url, debug=False):
       rv = urlfetch.fetch(url)
