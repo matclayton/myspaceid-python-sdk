@@ -185,13 +185,3 @@ class UrlFetcher(object):
     except urllib2.URLError, e:
       response = None
     return response
-
-class UrlFetcher():
-
-  def fetch(self, url, debug=False):
-      rv = urlfetch.fetch(url)
-      s = rv.content
-      if debug:
-        print 'requested url: %s' % url
-        print 'server response: %s' % s
-      return s
