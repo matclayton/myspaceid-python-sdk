@@ -1,50 +1,61 @@
+Overview of the samples in this directory:
+-------------------------------------------
 
--------------------------------------------------------------------------------------------------
-   IMPORTANT: 
-
-      Please make sure to edit the ckeynsecret.py file in the sample directories and enter your
-      own consumer key and secret before running the samples.
--------------------------------------------------------------------------------------------------
-
-The samples provided in this directory are based on Google App Engine(GAE) and require the GAE SDK to run. 
-Some of the sample code in these directories in based on the GAE samples on code.google.com with modifications
-to implement the "hybrid" protocol.
-
-Please make sure to install the  Google App Engine SDK first from here (http://code.google.com/appengine/downloads.html) 
-before proceeding to run the sample applications.
-
-After you have verified that the GAE environment is properly setup, you can run the samples locally in your GAE environment.
-To run the samples, simply copy the following directories to corresponding application path and then run your local GAE 
-dev_appserver script:
-
-	src\myspace
-	src\oauthlib
-	src\openid
-	src\simplejson
+	openid-combined-consumer:
+	-------------------------
+	This sample demonstrates an OpenID "Combined Consumer" by implementing the openid/oauth "hybrid" spec as specified at: 
+	http://step2.googlecode.com/svn/spec/openid_oauth_extension/latest/openid_oauth_extension.html
 	
-For example, to run the openid-combined-consumer application please copy the directories above to the openid-combined-consumer 
-directory and then run your dev_appserver script.
+	This sample also demostrates the interaction with MySpace using the MySpace library to fetch the user's profile and 
+	friends data
 
-For the oauth example you must copy all the directories mentioned above except openid which is not required.
 
-openid-combined-consumer:
--------------------------
-This sample demonstrates an OpenID "Combined Consumer" by implementing the openid/oauth "hybrid" spec as specified at: 
-http://step2.googlecode.com/svn/spec/openid_oauth_extension/latest/openid_oauth_extension.html
+	oauth:
+	------
+	This sample demonstrates an OAuth Consumer application by implementing the oauth delegated access flow ("3 legged oauth").
+	Once the User authrizes the Consumer's request, it fetches the user's profile and friend information using the library. 
 
-This sample also demostrates the interaction with MySpace using the MySpace library to fetch the user's profile and 
-friends data
+    NOTE: Please note that in the samples above we store the access token in the session. But, in a real application you would
+          probably need to store it an the user database so that you can call the MySpace API methods in the future using the 
+          stored access token
 
-oauth:
------------------------
-This sample demonstrates an OAuth Consumer application by implementing the oauth delegated access flow ("3 legged oauth").
-Once the User authrizes the Consumer's request, it fetches the user's profile and friend information using the library. 
-
-Please note that in the samples above we store the access token in the session. But, in a real application you would
-probably need to store it an the user database so that you can call the MySpace API methods in the future using the 
-stored access token
-
+Running the sample applications:
+--------------------------------  
+	The samples provided in this directory are based on Google App Engine(GAE) and require the GAE SDK to run. 
+	Some of the sample code in these directories in based on the GAE samples on code.google.com with modifications
+	to implement the "hybrid" protocol.
+	
+	Please make sure to install the  Google App Engine SDK first from here (http://code.google.com/appengine/downloads.html) 
+	before proceeding to run the sample applications.
+	
+	After you have verified that the GAE environment is properly setup, you can run the samples locally in your GAE environment.
+	
+	To run the samples, please follow these steps:
+	
+	   1. Go to http://developer.myspace.com/modules/apps/pages/CreateAppAccount.aspx to create a new MySpace application
+	      NOTE: Make sure to select the "Create MySpaceID App" link and complete the application creation process
+	      
+	   2. Note down the newly created application's consumer key and secret.
+	
+	   3. cd to the directory of the sample you want to run. For example, cd myspaceidsdk/samples/google-app-engine/openid-combined-consumer
+	
+	   4. Edit the ckeynsecret.py file by inserting your own consumer key/secret noted in step 2 above.
+	 
+	   5. Copy the following SDK library folders from the myspace-python-sdk\src directory into the appropriate sample directory:
+				myspace
+				oauthlib
+				openid
+				simplejson
+	
+	   	 For example, to run the openid-combined-consumer application please copy the directories above to the openid-combined-consumer 
+	     directory. Repeat the same for each of the sample applications. Please note that the same consumer key/secret can be used for
+	     all the samples.
+	    
+	   6. Type " dev_appserver.py ." from the samples root directory. This should fire up your local instance of appengine and will start listening on port 8080
+	   
+	   7. You can access the sample from your browser by navigating to http://localhost:8080
+	 
 Some useful GAE links:
 ----------------------
-GAE dev environment seteup: http://code.google.com/appengine/docs/gettingstarted/devenvironment.html
-Using Eclipse with GAE: http://code.google.com/appengine/articles/eclipse.html
+	GAE dev environment seteup: http://code.google.com/appengine/docs/gettingstarted/devenvironment.html
+	Using Eclipse with GAE: http://code.google.com/appengine/articles/eclipse.html
