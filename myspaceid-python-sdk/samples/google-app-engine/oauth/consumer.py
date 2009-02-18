@@ -49,16 +49,16 @@ class StartAuth(webapp.RequestHandler):
 class OauthCallback(webapp.RequestHandler):
     def get(self):
         session=gmemsess.Session(self)
-        str_unauthed_token = session['unauthed_token'] if 'unauthed_token' in session else None
-        if not str_unauthed_token:
+        unauthed_token = session['unauthed_token'] if 'unauthed_token' in session else None
+        if not unauthed_token:
             self.response.out.write("No un-authed token found in session")
             return
-        unauthorized_request_token = oauth.OAuthToken.from_string(str_unauthed_token)       
-        if unauthorized_request_token.key != self.request.get('oauth_token', 'no-token'):
+        token = oauth.OAuthToken.from_string(unauthed_token)       
+        if token.key != self.request.get('oauth_token', 'no-token'):
             self.response.out.write("Something went wrong! Tokens do not match")
             return
         ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET)
-        access_token = ms.get_access_token(unauthorized_request_token)
+        access_token = ms.get_access_token(token)
         session['access_token'] = access_token.to_string()
         session.save()
         self.redirect('/displayprofile')
