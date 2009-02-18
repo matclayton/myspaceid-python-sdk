@@ -60,7 +60,7 @@ var myTabs = new YAHOO.widget.TabView("MySpaceTabs");
 var tabTwoImageGroup = new YAHOO.util.ImageLoader.group('friendsTab', 'mouseover');
 
 {% for friend in friends_data.Friends %}
-tabTwoImageGroup.registerSrcImage('{{friend.name}}', '{{ friend.image }}');
+tabTwoImageGroup.registerSrcImage("{{friend.name}}", "{{ friend.image }}");
 {% endfor %}
 
 tabTwoImageGroup.addTrigger('friendsTab', 'focus');
