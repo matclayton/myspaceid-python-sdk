@@ -56,7 +56,7 @@ from openid.fetchers import setDefaultFetcher, Urllib2Fetcher
 from openid.consumer.consumer import Consumer
 from openid.consumer import discover
 from openid.extensions import oauth
-from myspace.myspaceapi import MySpace
+from myspace.myspaceapi import MySpace, MySpaceError
 import store
 import gmemsess
 import ckeynsecret
@@ -208,19 +208,21 @@ class FinishHandler(Handler):
     response = consumer.complete(args, self.request.uri)
 
     if response.status == 'success':
-      """
-      sreg_data = sreg.SRegResponse.fromSuccessResponse(response).items()
-      ax_data = ax.FetchResponse.fromSuccessResponse(response)
-      """
       oauth_data = oauth.OauthAuthorizeTokenResponse.fromSuccessResponse(response)
       if (oauth_data.authorized_request_token):
-          ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET)
-          access_token = ms.get_access_token(oauth_data.authorized_request_token)
-          ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET, access_token.key, access_token.secret)
-          user_id = ms.get_userid()
-          profile_data = ms.get_profile(user_id)
-          friends_data = ms.get_friends(user_id)
-          albums_data = ms.get_albums(user_id)
+          try:
+              ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET)
+              access_token = ms.get_access_token(oauth_data.authorized_request_token)
+              ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET, access_token.key, access_token.secret)
+              user_id = ms.get_userid()
+              profile_data = ms.get_profile(user_id)
+              friends_data = ms.get_friends(user_id)
+              albums_data = ms.get_albums(user_id)
+          except MySpaceError, e:
+              message = e.message
+              message += repr(e.http_response)
+              self.report_error(message, e)
+              return
       else:
           profile_data = friends_data = None
     elif response.status == 'failure':
