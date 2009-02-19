@@ -51,15 +51,12 @@ import wsgiref.handlers
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
-from google.appengine.api import urlfetch
 
-from openid import fetchers
+from openid.fetchers import setDefaultFetcher, Urllib2Fetcher
 from openid.consumer.consumer import Consumer
 from openid.consumer import discover
 from openid.extensions import oauth
 from myspace.myspaceapi import MySpace
-
-import fetcher
 import store
 import gmemsess
 import ckeynsecret
@@ -86,7 +83,7 @@ class Handler(webapp.RequestHandler):
     """Returns a Consumer instance.
     """
     if not self.consumer:
-      fetchers.setDefaultFetcher(fetcher.UrlfetchFetcher())
+      setDefaultFetcher(Urllib2Fetcher())
       self.consumer = Consumer(self.session, store.DatastoreStore())
 
     return self.consumer
