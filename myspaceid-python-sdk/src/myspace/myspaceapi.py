@@ -7,6 +7,7 @@ from oauthlib import oauth
 
 __all__ = [
     'MySpace',
+    'MySpaceError',
     ]
 
 OAUTH_REQUEST_TOKEN_URL = 'http://api.myspace.com/request_token'
@@ -27,11 +28,9 @@ API_VIDEOS_URL     = 'http://api.myspace.com/v1/users/%s/videos.json'
 API_VIDEO_URL      = 'http://api.myspace.com/v1/users/%s/videos/%s.json'
 
 class MySpaceError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    def __init__(self, message, http_response):
+        Exception.__init__(self, message)
+        self.http_response = http_response
     
 class MySpace():
 
@@ -136,8 +135,10 @@ class MySpace():
             self.consumer, token=token, http_url=oauth_url
         )
         oauth_request.sign_request(self.signature_method, self.consumer, token)
-        resp = self.url_fetcher.fetch(oauth_request.to_url(), debug)
-        return resp 
+        resp = self.url_fetcher.fetch(oauth_request.to_url())
+        if resp.status is not 200:
+            raise MySpaceError('MySpace OAuth API returned an error', resp)
+        return resp.body 
       
     def __call_myspace_api(self, api_url, parameters=None, debug=False):
         #Check to make sure the contructor was call called with the access_token
@@ -150,16 +151,52 @@ class MySpace():
             self.consumer, token=access_token, http_url=api_url, parameters=parameters
         )
         oauth_request.sign_request(self.signature_method, self.consumer, access_token)
-        json = self.url_fetcher.fetch(oauth_request.to_url(), debug)
-        api_response = simplejson.loads(json)        
+        resp = self.url_fetcher.fetch(oauth_request.to_url())
+        if resp.status is not 200:
+            raise MySpaceError('MySpace REST API returned an error', resp)
+        api_response = simplejson.loads(resp.body)        
         return api_response
 
 class UrlFetcher(object):
-  def fetch(self, url, body=None, headers=None, debug=False):    
-    req = urllib2.Request(url)
-    try:
-      f = urllib2.urlopen(req)
-      response = f.read()
-    except urllib2.URLError, e:
-      response = None
-    return response
+      def fetch(self, url, body=None, headers=None):
+        if headers is None:
+           headers = {}
+        req = urllib2.Request(url, data=body, headers=headers)
+        try:
+            f = urllib2.urlopen(req)
+            try:
+                return self._makeResponse(f)
+            finally:
+                f.close()
+        except urllib2.HTTPError, why:
+            try:
+                return self._makeResponse(why)
+            finally:
+                why.close()
+
+      def _makeResponse(self, urllib2_response):
+        resp = HTTPResponse()
+        resp.body = urllib2_response.read()
+        resp.final_url = urllib2_response.geturl()
+        resp.headers = dict(urllib2_response.info().items())
+    
+        if hasattr(urllib2_response, 'code'):
+            resp.status = urllib2_response.code
+        else:
+            resp.status = 200   
+        return resp
+
+class HTTPResponse(object):
+      headers = None
+      status = None
+      body = None
+      final_url = None
+    
+      def __init__(self, final_url=None, status=None, headers=None, body=None):
+          self.final_url = final_url
+          self.status = status
+          self.headers = headers
+          self.body = body
+    
+      def __repr__(self):
+          return "[HTTP Status Code: %r --- Request URL: %s --- Response: %s" % (self.status, self.final_url, self.body)
