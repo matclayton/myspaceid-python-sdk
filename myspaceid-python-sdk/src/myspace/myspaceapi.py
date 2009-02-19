@@ -1,10 +1,6 @@
 import httplib
 import sys
 import urllib2
-try:
-    from google.appengine.api import urlfetch
-except:
-    pass
 import exceptions
 import simplejson
 from oauthlib import oauth
@@ -30,11 +26,6 @@ API_STATUS_URL     = 'http://api.myspace.com/v1/users/%s/status.json'
 API_VIDEOS_URL     = 'http://api.myspace.com/v1/users/%s/videos.json'
 API_VIDEO_URL      = 'http://api.myspace.com/v1/users/%s/videos/%s.json'
 
-def get_default_urlfetcher():
-  if sys.modules.has_key('google.appengine.api.urlfetch'):
-    return AppEngineUrlFetcher()
-  return UrlFetcher()
-
 class MySpaceError(Exception):
     def __init__(self, value):
         self.value = value
@@ -51,7 +42,7 @@ class MySpace():
           self.token = oauth.OAuthConsumer(oauth_token_key, oauth_token_secret)
       else:
           self.token = None          
-      self.url_fetcher = get_default_urlfetcher()
+      self.url_fetcher = UrlFetcher()
 
     """OAuth Related functions 
     """  
@@ -163,22 +154,9 @@ class MySpace():
         api_response = simplejson.loads(json)        
         return api_response
 
-class AppEngineUrlFetcher():
-  """Implementation of UrlFetch using AppEngine's URLFetch API."""
-
-  def fetch(self, url, debug=False):
-      rv = urlfetch.fetch(url)
-      s = rv.content
-      if debug:
-        print 'requested url: %s' % url
-        print 'server response: %s' % s
-      return s
-
 class UrlFetcher(object):
-  """Implementation of UrlFetch for non-AppEngine envs."""
-
-  def fetch(self, url, debug=False):    
-    req = urllib2.urlopen(url)
+  def fetch(self, url, body=None, headers=None, debug=False):    
+    req = urllib2.Request(url)
     try:
       f = urllib2.urlopen(req)
       response = f.read()
