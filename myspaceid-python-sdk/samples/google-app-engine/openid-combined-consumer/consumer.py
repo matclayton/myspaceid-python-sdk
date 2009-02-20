@@ -220,7 +220,8 @@ class FinishHandler(Handler):
               albums_data = ms.get_albums(user_id)
           except MySpaceError, e:
               message = e.message
-              message += repr(e.http_response)
+              if e.http_response is not None:
+                 message += repr(e.http_response)
               self.report_error(message, e)
               return
       else:
