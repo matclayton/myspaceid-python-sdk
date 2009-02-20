@@ -19,6 +19,7 @@ __author__ = 'cnanga@myspace.com (Chak Nanga)'
 import httplib
 import sys
 import urllib2
+import string
 import exceptions
 import simplejson
 from oauthlib import oauth
@@ -103,7 +104,23 @@ class MySpace():
         return self.__call_myspace_api(album_request_url)
     
     def get_friends(self, user_id, page=None, page_size=None, list=None, show=None):
+        # validate common parameters
         self.__validate_params(locals())
+        #validate the list param - it can be one of 'top', 'online' or 'app'
+        valid_list_values = ['top', 'online', 'app']
+        if list is not None:
+            if list not in valid_list_values:
+                raise MySpaceError('Invalid Parameter Value. list must be one of %s' % str(valid_list_values))
+                return
+        #validate show parameter. show can be a combination of 'mood', 'status', 'online' separated by '|'
+        valid_show_values = ['mood', 'status', 'online']
+        if show is not None:
+            given_show = string.split(show, '|')
+            for s in given_show:
+                if s not in valid_show_values:
+                    raise MySpaceError('Invalid Parameter Value. show must be a combination of %s' % str(valid_show_values))
+                    return
+        # Proceed to making the request
         friends_request_url = API_FRIENDS_URL % user_id       
         #set up extra params, if any
         params = {}
@@ -171,8 +188,10 @@ class MySpace():
         non_empty_params = ['user_id']
         for param, value in params.items():
             if param in non_empty_params:
-                if value is None or len(value) == 0:
-                    message =  invalid_param % (param, ' cannot be None or empty')
+                try:
+                    user_id = int(value)
+                except (ValueError, TypeError):
+                    message =  invalid_param % (param, ' must be an integer')
                     raise MySpaceError(message)
                     return
         #Non-negative param check
