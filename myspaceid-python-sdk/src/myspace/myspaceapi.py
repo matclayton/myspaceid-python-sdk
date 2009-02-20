@@ -28,7 +28,7 @@ API_VIDEOS_URL     = 'http://api.myspace.com/v1/users/%s/videos.json'
 API_VIDEO_URL      = 'http://api.myspace.com/v1/users/%s/videos/%s.json'
 
 class MySpaceError(Exception):
-    def __init__(self, message, http_response):
+    def __init__(self, message, http_response=None):
         Exception.__init__(self, message)
         self.http_response = http_response
     
@@ -69,14 +69,23 @@ class MySpace():
         return user_info['userId']
 
     def get_albums(self, user_id, page=None, page_size=None):
+        self.__validate_params(locals())
         albums_request_url = API_ALBUMS_URL % user_id
-        return self.__call_myspace_api(albums_request_url)
+        #set up extra params, if any
+        params = {}
+        if page is not None:
+            params['page'] = page
+        if page_size is not None:
+            params['page_size'] = page_size
+        return self.__call_myspace_api(albums_request_url, parameters=params)
     
     def get_album(self, user_id, album_id):
+        self.__validate_params(locals())
         album_request_url = API_ALBUM_URL % (user_id, album_id)
         return self.__call_myspace_api(album_request_url)
     
     def get_friends(self, user_id, page=None, page_size=None, list=None, show=None):
+        self.__validate_params(locals())
         friends_request_url = API_FRIENDS_URL % user_id       
         #set up extra params, if any
         params = {}
@@ -91,14 +100,17 @@ class MySpace():
         return self.__call_myspace_api(friends_request_url, parameters=params)
 
     def get_friendship(self, user_id, friend_ids):
+        self.__validate_params(locals())
         friendship_request_url = API_FRIENDSHIP_URL % (user_id, friend_ids)
         return self.__call_myspace_api(friendship_request_url)
 
     def get_mood(self, user_id):
+        self.__validate_params(locals())
         mood_request_url = API_MOOD_URL % user_id
         return self.__call_myspace_api(mood_request_url)
 
     def get_photos(self, user_id, page=None, page_size=None):
+        self.__validate_params(locals())
         photos_request_url = API_PHOTOS_URL % user_id       
         #set up extra params, if any
         params = {}
@@ -109,27 +121,51 @@ class MySpace():
         return self.__call_myspace_api(photos_request_url, parameters=params)
 
     def get_photo(self, user_id, photo_id):
+        self.__validate_params(locals())
         photo_request_url = API_PHOTO_URL % (user_id, photo_id)
         return self.__call_myspace_api(photo_request_url)
     
     def get_profile(self, user_id):        
+        self.__validate_params(locals())
         profile_request_url = API_PROFILE_URL % user_id
         return self.__call_myspace_api(profile_request_url)
 
     def get_status(self, user_id):
+        self.__validate_params(locals())
         status_request_url = API_STATUS_URL % user_id
         return self.__call_myspace_api(status_request_url)
 
     def get_videos(self, user_id):
+        self.__validate_params(locals())
         videos_request_url = API_VIDEOS_URL % user_id
         return self.__call_myspace_api(videos_request_url)
 
     def get_video(self, user_id, video_id):
+        self.__validate_params(locals())
         video_request_url = API_VIDEO_URL % (user_id, video_id)
         return self.__call_myspace_api(video_request_url)
     
     """Miscellaneous utility functions 
     """
+    def __validate_params(self, params):
+        invalid_param = 'Invalid Parameter Value. %s %s'
+        # Non empty/None param check
+        non_empty_params = ['user_id']
+        for param, value in params.items():
+            if param in non_empty_params:
+                if value is None or len(value) == 0:
+                    message =  invalid_param % (param, ' cannot be None or empty')
+                    raise MySpaceError(message)
+                    return
+        #Non-negative param check
+        positive_params = ['page', 'page_size', 'user_id', 'video_id', 'photo_id', 'album_id']
+        for param, value in params.items():
+            if param in positive_params and value is not None:
+                if value < 0:
+                    message = invalid_param % (param, ' cannot be negative')
+                    raise MySpaceError(message)
+                    return
+        
     def __call_oauth_api(self, oauth_url, token=None, debug=False):
         oauth_request = oauth.OAuthRequest.from_consumer_and_token(
             self.consumer, token=token, http_url=oauth_url
