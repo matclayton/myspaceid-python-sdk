@@ -61,8 +61,7 @@ class Session(dict):
                         random.choice(_sidChars)+random.choice(_sidChars)+\
                         random.choice(_sidChars)+random.choice(_sidChars)+\
                         random.choice(_sidChars)+random.choice(_sidChars)
-        rh.response.headers.add_header('Set-Cookie','%s=%s;'%(name,self._sid))
-
+        rh.response.headers.add_header('Set-Cookie','%s=%s; path=/;'%(name,self._sid))
     #----------------------------------------------------------
     def save(self):
         """Save session data."""
