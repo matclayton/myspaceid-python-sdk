@@ -53,8 +53,12 @@ Running the sample applications:
 	    
 	   6. Type " dev_appserver.py ." from the samples root directory. This should fire up your local instance of appengine and will start listening on port 8080
 	   
-	   7. You can access the sample from your browser by navigating to http://localhost:8080
+	   7. You can access the sample from your browser by navigating to http://your-domain:8080
 	 
+	IMPORTANT: The domain on which you run your server MUST be entered as a realm on your MySpace app configuration page.  In order
+	for the rails samples to work you MUST INCLUDE A SLASH AT THE END OF YOUR DOMAIN, e.g. http://your-domain:3000/, when you enter
+	it as a realm.
+
 Some useful GAE links:
 ----------------------
 	GAE dev environment seteup: http://code.google.com/appengine/docs/gettingstarted/devenvironment.html
