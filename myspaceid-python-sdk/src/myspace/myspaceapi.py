@@ -45,6 +45,9 @@ API_PROFILE_URL    = 'http://api.myspace.com/v1/users/%s/profile.json'
 API_STATUS_URL     = 'http://api.myspace.com/v1/users/%s/status.json'
 API_VIDEOS_URL     = 'http://api.myspace.com/v1/users/%s/videos.json'
 API_VIDEO_URL      = 'http://api.myspace.com/v1/users/%s/videos/%s.json'
+API_ACTIVITIES_URL = "http://api.myspace.com/v1/users/%s/activities.atom"
+API_FRIENDSACTIVITIES_URL = "http://api.myspace.com/v1/users/%s/friends/activities.atom"
+
 
 class MySpaceError(Exception):
     def __init__(self, message, http_response=None):
@@ -179,6 +182,16 @@ class MySpace():
         self.__validate_params(locals())
         video_request_url = API_VIDEO_URL % (user_id, video_id)
         return self.__call_myspace_api(video_request_url)
+
+    def get_activities_atom(self, user_id):
+        self.__validate_params(locals())
+        activities_request_url = API_ACTIVITIES_URL % user_id
+        return self.__call_myspace_api(activities_request_url, get_raw_response=True)
+
+    def get_friends_activities_atom(self, user_id):
+        self.__validate_params(locals())
+        activities_request_url = API_FRIENDSACTIVITIES_URL % user_id
+        return self.__call_myspace_api(activities_request_url, get_raw_response=True)
     
     """Miscellaneous utility functions 
     """
@@ -213,7 +226,7 @@ class MySpace():
             raise MySpaceError('MySpace OAuth API returned an error', resp)
         return resp.body 
       
-    def __call_myspace_api(self, api_url, parameters=None, debug=False):
+    def __call_myspace_api(self, api_url, parameters=None, debug=False, get_raw_response=False):
         #Check to make sure the contructor was call called with the access_token
         #before making API calls
         if self.token is None:
@@ -227,7 +240,7 @@ class MySpace():
         resp = self.url_fetcher.fetch(oauth_request.to_url())
         if resp.status is not 200:
             raise MySpaceError('MySpace REST API returned an error', resp)
-        api_response = simplejson.loads(resp.body)        
+        api_response = resp.body if get_raw_response else simplejson.loads(resp.body)        
         return api_response
 
 class UrlFetcher(object):
