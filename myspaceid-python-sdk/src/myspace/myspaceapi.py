@@ -22,6 +22,8 @@ import urllib2
 import string
 import exceptions
 import simplejson
+import urlparse
+import cgi
 from oauthlib import oauth
 
 __all__ = [
@@ -47,6 +49,9 @@ API_VIDEOS_URL     = 'http://api.myspace.com/v1/users/%s/videos.json'
 API_VIDEO_URL      = 'http://api.myspace.com/v1/users/%s/videos/%s.json'
 API_ACTIVITIES_URL = "http://api.myspace.com/v1/users/%s/activities.atom"
 API_FRIENDSACTIVITIES_URL = "http://api.myspace.com/v1/users/%s/friends/activities.atom"
+API_UPDATE_STATUS_URL = "http://api.myspace.com/v1/users/%s/status";
+API_UPDATE_MOOD_URL   = "http://api.myspace.com/v1/users/%s/mood";
+API_CREATE_ALBUM_URL = 'http://api.myspace.com/v1/users/%s/albums.json'
 
 
 class MySpaceError(Exception):
@@ -192,6 +197,43 @@ class MySpace():
         self.__validate_params(locals())
         activities_request_url = API_FRIENDSACTIVITIES_URL % user_id
         return self.__call_myspace_api(activities_request_url, get_raw_response=True)
+
+    def update_status(self, user_id, status):
+        self.__validate_params(locals())
+        if len(status) == 0:
+            raise MySpaceError('status must be set to a non-empty string')
+            return
+        params = {}
+        params['status'] = status
+        update_status_url = API_UPDATE_STATUS_URL % user_id
+        # setting get_raw_status=True since the REST API does not return any data on success
+        return self.__call_myspace_api(update_status_url, method='PUT', parameters=params, get_raw_response=True)
+
+    def update_mood(self, user_id, mood):
+        self.__validate_params(locals())
+        params = {}
+        params['mood'] = mood
+        update_mood_url = API_UPDATE_MOOD_URL % user_id
+        # setting get_raw_status=True since the REST API does not return any data on success
+        return self.__call_myspace_api(update_mood_url, method='PUT', parameters=params, get_raw_response=True)
+
+    def create_album(self, user_id, title, location=None, privacy='Everyone'):
+        self.__validate_params(locals())
+        #validate the privacy param - it can be one of 'Everyone', 'FriendsOnly' or 'Me'
+        valid_privacy_values = ['Everyone', 'FriendsOnly', 'Me']
+        if privacy is not None:
+            if privacy not in valid_privacy_values:
+                raise MySpaceError('Invalid Parameter Value. list must be one of %s' % str(valid_privacy_values))
+                return
+        album_create_url = API_CREATE_ALBUM_URL % user_id
+        # set up album location, title etc.
+        params = {}
+        params['title'] = title
+        if privacy is not None:
+            params['privacy'] = privacy
+        if location is not None:
+            params['location'] = location
+        return self.__call_myspace_api(album_create_url, method='POST', parameters=params)
     
     """Miscellaneous utility functions 
     """
@@ -208,7 +250,7 @@ class MySpace():
                     raise MySpaceError(message)
                     return
         #Non-negative param check
-        positive_params = ['page', 'page_size', 'user_id', 'video_id', 'photo_id', 'album_id']
+        positive_params = ['page', 'page_size', 'user_id', 'video_id', 'photo_id', 'album_id', 'mood']
         for param, value in params.items():
             if param in positive_params and value is not None:
                 if value < 0:
@@ -226,19 +268,43 @@ class MySpace():
             raise MySpaceError('MySpace OAuth API returned an error', resp)
         return resp.body 
       
-    def __call_myspace_api(self, api_url, parameters=None, debug=False, get_raw_response=False):
-        #Check to make sure the contructor was call called with the access_token
-        #before making API calls
+    def __call_myspace_api(self, api_url, method='GET', parameters=None, debug=False, get_raw_response=False):
+        """Check to make sure the constructor was call called with the access_token
+           before making API calls
+        """
         if self.token is None:
             raise MySpaceError('This function requires a valid OAuth Token. Make sure the oauth_token_key and oauth_token_secret are specified in the MySpace constructor')
         
         access_token = self.token
+        # Use POST for PUT as well. Set up http_method correctly for base string generation + signing
+        http_method = 'POST' if (method == 'POST' or method == 'PUT') else method
         oauth_request = oauth.OAuthRequest.from_consumer_and_token(
-            self.consumer, token=access_token, http_url=api_url, parameters=parameters
+            self.consumer, token=access_token, http_method=http_method, http_url=api_url, parameters=parameters
         )
         oauth_request.sign_request(self.signature_method, self.consumer, access_token)
-        resp = self.url_fetcher.fetch(oauth_request.to_url())
-        if resp.status is not 200:
+
+        headers = {}
+        body = None
+        if (method == 'PUT'):
+            headers['X-HTTP-Method-Override'] = 'PUT'           
+        # Generate POST/PUT body
+        if (method == 'PUT' or method == 'POST'):
+            body = '&'.join('%s=%s' % (oauth.escape(str(k)), oauth.escape(str(v))) for k, v in parameters.iteritems())           
+            
+        """Get the request URL. For GET it's oauth_request.to_url(). For POST/PUT the URL should have just the oauth
+           related params in the query string. Any request specific params go into the POST body - this is due to the
+           way MySpace implements it's oauth
+        """       
+        request_url = oauth_request.to_url()
+        if (method == 'POST' or method == 'PUT'):
+            qs = urlparse.urlparse(oauth_request.to_url())[4]
+            qparams = oauth_request._split_url_string(qs)
+            for k, v in parameters.iteritems(): # nuke all non-oauth params and build a query string with only oauth related params
+                del qparams[k]
+            qs = '&'.join('%s=%s' % (oauth.escape(str(k)), oauth.escape(str(v))) for k, v in qparams.iteritems())
+            request_url = oauth_request.get_normalized_http_url() + '?' + qs
+        resp = self.url_fetcher.fetch(request_url, body=body, headers=headers)
+        if resp.status > 201:
             raise MySpaceError('MySpace REST API returned an error', resp)
         api_response = resp.body if get_raw_response else simplejson.loads(resp.body)        
         return api_response
