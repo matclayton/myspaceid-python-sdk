@@ -198,7 +198,7 @@ class MySpace():
         activities_request_url = API_FRIENDSACTIVITIES_URL % user_id
         return self.__call_myspace_api(activities_request_url, get_raw_response=True)
 
-    def update_status(self, user_id, status):
+    def set_status(self, user_id, status):
         self.__validate_params(locals())
         if len(status) == 0:
             raise MySpaceError('status must be set to a non-empty string')
@@ -209,7 +209,7 @@ class MySpace():
         # setting get_raw_status=True since the REST API does not return any data on success
         return self.__call_myspace_api(update_status_url, method='PUT', parameters=params, get_raw_response=True)
 
-    def update_mood(self, user_id, mood):
+    def set_mood(self, user_id, mood):
         self.__validate_params(locals())
         params = {}
         params['mood'] = mood
