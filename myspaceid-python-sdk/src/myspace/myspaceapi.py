@@ -53,7 +53,7 @@ API_FRIENDSACTIVITIES_URL = "http://api.myspace.com/v1/users/%s/friends/activiti
 API_UPDATE_STATUS_URL = "http://api.myspace.com/v1/users/%s/status";
 API_UPDATE_MOOD_URL   = "http://api.myspace.com/v1/users/%s/mood";
 API_CREATE_ALBUM_URL = 'http://api.myspace.com/v1/users/%s/albums.json'
-
+API_INDICATORS_URL = 'http://api.myspace.com/v1/users/%s/indicators.json'
 
 class MySpaceError(Exception):
     def __init__(self, message, http_response=None):
@@ -259,6 +259,11 @@ class MySpace():
         if location is not None:
             params['location'] = location
         return self.__call_myspace_api(album_create_url, method='POST', parameters=params)
+
+    def get_indicators(self, user_id):
+        self.__validate_params(locals())
+        get_indicators_url = API_INDICATORS_URL % user_id
+        return self.__call_myspace_api(get_indicators_url)
     
     """Miscellaneous utility functions 
     """
