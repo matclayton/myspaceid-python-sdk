@@ -11,6 +11,7 @@ import gmemsess
 import ckeynsecret
 from myspace.myspaceapi import MySpace
 from oauthlib import oauth
+import urllib
 
 """
 webapp handlers
@@ -54,7 +55,7 @@ class OauthCallback(webapp.RequestHandler):
             self.response.out.write("No un-authed token found in session")
             return
         token = oauth.OAuthToken.from_string(unauthed_token)       
-        if token.key != self.request.get('oauth_token', 'no-token'):
+        if token.key != urllib.unquote( self.request.get('oauth_token', 'no-token') ):
             self.response.out.write("Something went wrong! Tokens do not match")
             return
         ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET)
