@@ -41,6 +41,7 @@ API_ALBUM_URL      = 'http://api.myspace.com/v1/users/%s/albums/%s/photos.json'
 API_FRIENDS_URL    = 'http://api.myspace.com/v1/users/%s/friends.json'
 API_FRIENDSHIP_URL = 'http://api.myspace.com/v1/users/%s/friends/%s.json'
 API_MOOD_URL       = 'http://api.myspace.com/v1/users/%s/mood.json'
+API_MOODS_URL      = 'http://api.myspace.com/v1/users/%s/moods.json'
 API_PHOTOS_URL     = 'http://api.myspace.com/v1/users/%s/photos.json'
 API_PHOTO_URL      = 'http://api.myspace.com/v1/users/%s/photos/%s.json'
 API_PROFILE_URL    = 'http://api.myspace.com/v1/users/%s/profile.json'
@@ -152,6 +153,11 @@ class MySpace():
         mood_request_url = API_MOOD_URL % user_id
         return self.__call_myspace_api(mood_request_url)
 
+    def get_moods(self, user_id):
+        self.__validate_params(locals())
+        moods_request_url = API_MOODS_URL % user_id
+        return self.__call_myspace_api(moods_request_url)
+
     def get_photos(self, user_id, page=None, page_size=None):
         self.__validate_params(locals())
         photos_request_url = API_PHOTOS_URL % user_id       
@@ -168,11 +174,30 @@ class MySpace():
         photo_request_url = API_PHOTO_URL % (user_id, photo_id)
         return self.__call_myspace_api(photo_request_url)
     
-    def get_profile(self, user_id):        
+    def get_profile(self, user_id, type='full'):        
         self.__validate_params(locals())
+        #validate the type param - it can be one of 'basic', 'full' or 'extended'
+        valid_type_values = ['basic', 'full', 'extended']
+        if type is not None:
+            if type not in valid_type_values:
+                raise MySpaceError('Invalid Parameter Value. list must be one of %s' % str(valid_list_values))
+                return
+     
+        params = {}
+        params['detailtype'] = type
+        
         profile_request_url = API_PROFILE_URL % user_id
-        return self.__call_myspace_api(profile_request_url)
+        return self.__call_myspace_api(profile_request_url, parameters=params)
 
+    def get_profile_basic(self, user_id):
+        return self.get_profile(user_id, type='basic')
+
+    def get_profile_full(self, user_id):
+        return self.get_profile(user_id, type='full')
+
+    def get_profile_extended(self, user_id):
+        return self.get_profile(user_id, type='extended')
+    
     def get_status(self, user_id):
         self.__validate_params(locals())
         status_request_url = API_STATUS_URL % user_id
