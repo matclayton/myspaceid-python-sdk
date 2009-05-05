@@ -294,7 +294,7 @@ class MySpace():
         )
         oauth_request.sign_request(self.signature_method, self.consumer, token)
         resp = self.url_fetcher.fetch(oauth_request.to_url())
-        if resp.status is not 200:
+        if resp.status != 200:
             raise MySpaceError('MySpace OAuth API returned an error', resp)
         return resp.body 
       
