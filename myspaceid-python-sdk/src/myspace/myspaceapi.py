@@ -54,6 +54,7 @@ API_UPDATE_STATUS_URL = "http://api.myspace.com/v1/users/%s/status";
 API_UPDATE_MOOD_URL   = "http://api.myspace.com/v1/users/%s/mood";
 API_CREATE_ALBUM_URL = 'http://api.myspace.com/v1/users/%s/albums.json'
 API_INDICATORS_URL = 'http://api.myspace.com/v1/users/%s/indicators.json'
+API_NOTIFICATIONS_URL = 'http://api.myspace.com/v1/applications/%s/notifications'
 
 class MySpaceError(Exception):
     def __init__(self, message, http_response=None):
@@ -62,6 +63,15 @@ class MySpaceError(Exception):
     
 class MySpace():
 
+    """Constructor can be invoked with or without the oauth token key/secret.
+    
+       Invoke it without the token for:
+          - the oauth request_token and access_token API calls
+          - "onsite" application calls i.e. for opensocial apps that are hosted in an iframe
+          
+       Invoke it with the token for:
+          - MySpace ID application calls
+    """
     def __init__(self, consumer_key, consumer_secret, oauth_token_key=None, oauth_token_secret=None):
       self.consumer = oauth.OAuthConsumer(consumer_key, consumer_secret)
       self.signature_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
@@ -264,13 +274,51 @@ class MySpace():
         self.__validate_params(locals())
         get_indicators_url = API_INDICATORS_URL % user_id
         return self.__call_myspace_api(get_indicators_url)
+
+    """
+        send_notification Usage:
+        
+        ms = MySpace(ckeynsecret.CONSUMER_KEY, ckeynsecret.CONSUMER_SECRET)
+        notification_data = ms.send_notification(135455, "296768296", "Test Notification With A Button", 
+                                                 btn0_label="Go To Canvas", btn0_surface="canvas",
+                                                 btn1_label="Go To App Profile", btn1_surface="appProfile",
+                                                 mediaitems="http://api.myspace.com/v1/users/296768296")  
+    """
+    def send_notification(self, app_id, recipients, content, btn0_label=None, btn0_surface=None, btn1_label=None, btn1_surface=None, mediaitems=None):
+        self.__validate_params(locals())
+        if len(recipients) == 0:
+           raise MySpaceError('recipients must be set to a non-empty string')
+           return
+        if len(content) == 0:
+           raise MySpaceError('content must be set to a non-empty string')
+           return
+
+        params = {}
+        params['recipients'] = recipients
+
+        templateParameters = '{"content":"' + content + '"'
+        if btn0_label is not None:
+          if len(btn0_label) != 0:
+             templateParameters += ',"button0_label":"' + btn0_label + '"' + ',"button0_surface":"' + btn0_surface + '"'
+        if btn1_label is not None:
+          if len(btn1_label) != 0:
+             templateParameters += ',"button1_label":"' + btn1_label + '"' + ',"button1_surface":"' + btn1_surface + '"'
+        templateParameters += '}'
+        params['templateParameters'] = templateParameters
+
+        if mediaitems is not None:
+          if len(mediaitems) != 0:
+             params['mediaitems'] = '{"' + mediaitems + '"}'     
+        
+        send_notification_url = API_NOTIFICATIONS_URL % app_id
+        return self.__call_myspace_api(send_notification_url, method='POST', parameters=params)      
     
     """Miscellaneous utility functions 
     """
     def __validate_params(self, params):
         invalid_param = 'Invalid Parameter Value. %s %s'
         # Non empty/None param check
-        non_empty_params = ['user_id']
+        non_empty_params = ['user_id', 'app_id']
         for param, value in params.items():
             if param in non_empty_params:
                 try:
@@ -298,14 +346,9 @@ class MySpace():
             raise MySpaceError('MySpace OAuth API returned an error', resp)
         return resp.body 
       
-    def __call_myspace_api(self, api_url, method='GET', parameters=None, debug=False, get_raw_response=False):
-        """Check to make sure the constructor was call called with the access_token
-           before making API calls
-        """
-        if self.token is None:
-            raise MySpaceError('This function requires a valid OAuth Token. Make sure the oauth_token_key and oauth_token_secret are specified in the MySpace constructor')
-        
+    def __call_myspace_api(self, api_url, method='GET', parameters=None, debug=False, get_raw_response=False):      
         access_token = self.token
+        
         # Use POST for PUT as well. Set up http_method correctly for base string generation + signing
         http_method = 'POST' if (method == 'POST' or method == 'PUT') else method
         oauth_request = oauth.OAuthRequest.from_consumer_and_token(
